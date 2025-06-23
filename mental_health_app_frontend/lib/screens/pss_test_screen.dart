@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-// PSS-10 Test Screen where users will answer questions
+
 class PSSTestScreen extends StatefulWidget {
   const PSSTestScreen({super.key});
 
@@ -8,10 +8,8 @@ class PSSTestScreen extends StatefulWidget {
 }
 
 class _PSSTestScreenState extends State<PSSTestScreen> {
-  // List to hold the answers selected by the user
-  List<int> answers = List.generate(10, (index) => 0); // Default all answers to 0 (Never)
+  List<int> answers = List.generate(10, (index) => 0);
 
-  // List of PSS-10 questions
   final List<String> questions = [
     '1. In the last month, how often have you been upset because of something that happened unexpectedly?',
     '2. In the last month, how often have you felt that you were unable to control the important things in your life?',
@@ -25,7 +23,6 @@ class _PSSTestScreenState extends State<PSSTestScreen> {
     '10. In the last month, how often have you felt difficulties were piling up so high that you could not overcome them?'
   ];
 
-  // List of answer options
   final List<String> answerOptions = [
     'Never',
     'Almost Never',
@@ -34,22 +31,14 @@ class _PSSTestScreenState extends State<PSSTestScreen> {
     'Very Often'
   ];
 
-  // Function to calculate the total score
   int calculateScore() {
     return answers.reduce((value, element) => value + element);
   }
 
-  // Function to interpret the score
   String interpretScore(int score) {
-    if (score >= 0 && score <= 13) {
-      return 'Low stress';
-    } else if (score >= 14 && score <= 26) {
-      return 'Moderate stress';
-    } else if (score >= 27 && score <= 40) {
-      return 'High stress';
-    } else {
-      return 'Very high stress';
-    }
+    if (score <= 13) return 'Low stress';
+    if (score <= 26) return 'Moderate stress';
+    return 'High stress';
   }
 
   @override
@@ -58,14 +47,18 @@ class _PSSTestScreenState extends State<PSSTestScreen> {
       appBar: AppBar(title: const Text('PSS-10 Stress Test')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: SingleChildScrollView( // Make the entire body scrollable
+        child: SingleChildScrollView(
           child: Column(
-            children: <Widget>[
+            children: [
               ...List.generate(10, (index) {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(questions[index], style: const TextStyle(fontSize: 16)),
+                    Text(
+                      questions[index],
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+                    ),
+                    const SizedBox(height: 6),
                     Column(
                       children: List.generate(5, (answerIndex) {
                         return RadioListTile<int>(
@@ -91,17 +84,24 @@ class _PSSTestScreenState extends State<PSSTestScreen> {
                   String interpretation = interpretScore(score);
                   showDialog(
                     context: context,
-                    builder: (BuildContext context) {
+                    builder: (context) {
                       return AlertDialog(
                         title: const Text('Your PSS-10 Score'),
-                        content: Text('Your total score is: $score\n\n'
-                            'Interpretation: $interpretation'),
-                        actions: <Widget>[
+                        content: Text(
+                          'Your total score is: $score\nScore Interpretation: $interpretation',
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                        actions: [
+                          TextButton(
+                            child: const Text('Submit'),
+                            onPressed: () {
+                              Navigator.pop(context);
+                              Navigator.pop(context, score);
+                            },
+                          ),
                           TextButton(
                             child: const Text('Close'),
-                            onPressed: () {
-                              Navigator.of(context).pop(); // Close the dialog
-                            },
+                            onPressed: () => Navigator.pop(context),
                           ),
                         ],
                       );

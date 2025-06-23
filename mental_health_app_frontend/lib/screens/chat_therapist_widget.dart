@@ -3,7 +3,9 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class TherapistChatWidget extends StatefulWidget {
-  const TherapistChatWidget({Key? key}) : super(key: key);
+  final String? stressLevel;
+
+  const TherapistChatWidget({Key? key, this.stressLevel}) : super(key: key);
 
   @override
   State<TherapistChatWidget> createState() => _TherapistChatWidgetState();
@@ -12,34 +14,46 @@ class TherapistChatWidget extends StatefulWidget {
 class _TherapistChatWidgetState extends State<TherapistChatWidget> {
   final TextEditingController _controller = TextEditingController();
   final List<Map<String, String>> _messages = [];
-
-  final String apiKey = "AIzaSyBwqKyJ1aLE981hEk6JqAzj5179R4zPDns";
-  final String endpoint = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
-
+  final String apiKey = 'AIzaSyBwxKyJ1aLE981-ReplaceWithYourKey'; // Replace with your Gemini API key
+  final String endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
   bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.stressLevel != null) {
+      _messages.add({
+        'role': 'bot',
+        'text': 'I understand you’re experiencing a ${widget.stressLevel} stress level. I’m here to support you. How can I assist you today?'
+      });
+    }
+  }
 
   Future<void> sendMessage() async {
     final userMessage = _controller.text.trim();
     if (userMessage.isEmpty) return;
 
     setState(() {
-      _messages.add({"role": "user", "text": userMessage});
+      _messages.add({'role': 'user', 'text': userMessage});
       _controller.clear();
       _isLoading = true;
     });
 
-    final contextPrompt =
-        "Topic: Mental health and therapy. Respond as a calm and empathetic therapist. Brief and supportive responses only. $userMessage";
+    final contextPrompt = '''
+      Topic: Mental health and therapy. Respond as a calm and empathetic therapist. Brief and supportive responses only. 
+      User stress level: ${widget.stressLevel ?? 'Unknown'}. 
+      User message: $userMessage
+    ''';
 
     try {
       final response = await http.post(
         Uri.parse('$endpoint?key=$apiKey'),
-        headers: {"Content-Type": "application/json"},
+        headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
-          "contents": [
+          'contents': [
             {
-              "parts": [
-                {"text": contextPrompt}
+              'parts': [
+                {'text': contextPrompt}
               ]
             }
           ]
@@ -48,22 +62,22 @@ class _TherapistChatWidgetState extends State<TherapistChatWidget> {
 
       final data = jsonDecode(response.body);
       final reply = data['candidates']?[0]?['content']?['parts']?[0]?['text'] ??
-          "I'm here to support you. Can you tell me more?";
+          'I’m here to support you. Can you tell me more?';
 
       setState(() {
-        _messages.add({"role": "bot", "text": reply});
+        _messages.add({'role': 'bot', 'text': reply});
         _isLoading = false;
       });
     } catch (e) {
       setState(() {
-        _messages.add({"role": "bot", "text": "Sorry, something went wrong. Please try again later."});
+        _messages.add({'role': 'bot', 'text': 'Sorry, something went wrong. Please try again later.'});
         _isLoading = false;
       });
     }
   }
 
   Widget buildMessage(String role, String text) {
-    final isUser = role == "user";
+    final isUser = role == 'user';
     return Align(
       alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
@@ -95,7 +109,7 @@ class _TherapistChatWidgetState extends State<TherapistChatWidget> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Therapist Chat"),
+        title: const Text('Therapist Chat'),
       ),
       body: Column(
         children: [
@@ -120,15 +134,16 @@ class _TherapistChatWidgetState extends State<TherapistChatWidget> {
                   child: TextField(
                     controller: _controller,
                     decoration: const InputDecoration(
-                      hintText: "Talk to me...",
+                      hintText: 'Talk to me...',
                     ),
+                    onSubmitted: (_) => sendMessage(),
                   ),
                 ),
                 const SizedBox(width: 12),
                 ElevatedButton.icon(
                   onPressed: sendMessage,
                   icon: const Icon(Icons.send, size: 20),
-                  label: const Text("Send"),
+                  label: const Text('Send'),
                 ),
               ],
             ),

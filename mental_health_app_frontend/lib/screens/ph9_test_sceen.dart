@@ -99,8 +99,15 @@ class _PHQ9TestScreenState extends State<PHQ9TestScreen> {
                           ),
                           actions: [
                             TextButton(
+                              child: const Text('Submit'),
+                              onPressed: () {
+                                Navigator.pop(context);
+                                Navigator.pop(context, score);
+                              },
+                            ),
+                            TextButton(
                               child: const Text('Close'),
-                              onPressed: () => Navigator.of(context).pop(),
+                              onPressed: () => Navigator.pop(context),
                             ),
                           ],
                         );

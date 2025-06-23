@@ -4,8 +4,21 @@ import 'package:mental_health_app_frontend/screens/ph9_test_sceen.dart';
 import 'package:mental_health_app_frontend/screens/pss_test_screen.dart';
 import 'package:mental_health_app_frontend/screens/predictive_result_screen.dart';
 
-class TherapyTestScreen extends StatelessWidget {
+class TherapyTestScreen extends StatefulWidget {
   const TherapyTestScreen({super.key});
+
+  @override
+  _TherapyTestScreenState createState() => _TherapyTestScreenState();
+}
+
+class _TherapyTestScreenState extends State<TherapyTestScreen> {
+  Map<String, int> _testScores = {'gad7': 0, 'phq9': 0, 'pss': 0};
+
+  void _updateScore(String test, int score) {
+    setState(() {
+      _testScores[test] = score;
+    });
+  }
 
   void _showGAD7InfoDialog(BuildContext context) {
     showDialog(
@@ -154,11 +167,12 @@ class TherapyTestScreen extends StatelessWidget {
                       child: const Text('Read'),
                     ),
                     ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
+                      onPressed: () async {
+                        final score = await Navigator.push(
                           context,
                           MaterialPageRoute(builder: (context) => const GAD7TestScreen()),
                         );
+                        if (score != null) _updateScore('gad7', score);
                       },
                       child: const Text('Test'),
                     ),
@@ -185,11 +199,12 @@ class TherapyTestScreen extends StatelessWidget {
                       child: const Text('Read'),
                     ),
                     ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
+                      onPressed: () async {
+                        final score = await Navigator.push(
                           context,
                           MaterialPageRoute(builder: (context) => const PHQ9TestScreen()),
                         );
+                        if (score != null) _updateScore('phq9', score);
                       },
                       child: const Text('Test'),
                     ),
@@ -216,11 +231,12 @@ class TherapyTestScreen extends StatelessWidget {
                       child: const Text('Read'),
                     ),
                     ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
+                      onPressed: () async {
+                        final score = await Navigator.push(
                           context,
                           MaterialPageRoute(builder: (context) => const PSSTestScreen()),
                         );
+                        if (score != null) _updateScore('pss', score);
                       },
                       child: const Text('Test'),
                     ),
@@ -235,14 +251,13 @@ class TherapyTestScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: ElevatedButton(
           onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const PredictiveResultScreen()),
-            );
+            // Return test scores to previous screen
+            Navigator.pop(context, _testScores);
           },
-          child: const Text('View Predictive Results'),
+          child: const Text('Submit Assessments'),
         ),
       ),
     );
   }
 }
+

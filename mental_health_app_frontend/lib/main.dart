@@ -2,6 +2,9 @@ import 'package:device_preview/device_preview.dart';
 import 'package:flutter/material.dart';
 import 'package:mental_health_app_frontend/screens/TherapistPredictionBehaviorScreen.dart';
 import 'package:mental_health_app_frontend/screens/home_screen.dart';
+import 'package:mental_health_app_frontend/screens/predictive_result_screen.dart';
+import 'package:mental_health_app_frontend/screens/therapy_test_screen.dart';
+import 'package:mental_health_app_frontend/screens/chat_therapist_widget.dart';
 
 void main() {
   runApp(DevicePreview(builder: (context) => const MentalHealthApp()));
@@ -15,8 +18,8 @@ class MentalHealthApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primaryColor: const Color(0xFF0288D1), // Deep teal for primary elements
-        scaffoldBackgroundColor: const Color(0xFFF5F5F5), // Light grey background
+        primaryColor: const Color(0xFF0288D1),
+        scaffoldBackgroundColor: const Color(0xFFF5F5F5),
         appBarTheme: const AppBarTheme(
           backgroundColor: Color(0xFF0288D1),
           foregroundColor: Colors.white,
@@ -42,7 +45,7 @@ class MentalHealthApp extends StatelessWidget {
         ),
         cardTheme: CardTheme(
           color: Colors.white,
-          elevation:2 ,
+          elevation: 2,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(26),
           ),
@@ -72,7 +75,16 @@ class MentalHealthApp extends StatelessWidget {
           ),
         ),
       ),
-      home: const HomeScreen(),
+      initialRoute: '/',
+      routes: {
+        '/': (context) => const HomeScreen(),
+        '/predictive_result': (context) => PredictiveResultScreen(
+          prediction: ModalRoute.of(context)!.settings.arguments,
+        ),
+        '/therapist_prediction': (context) => const TherapistPredictionBehaviorScreen(),
+        '/therapy_test': (context) => const TherapyTestScreen(),
+        '/chat_therapist': (context) => const TherapistChatWidget(),
+      },
     );
   }
 }

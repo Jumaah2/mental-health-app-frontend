@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'package:mental_health_app_frontend/modals/userdata.dart';
 import 'package:mental_health_app_frontend/screens/therapy_test_screen.dart';
 
@@ -13,8 +15,63 @@ class _TherapistPredictionBehaviorScreenState extends State<TherapistPredictionB
   final _formKey = GlobalKey<FormState>();
   final UserData _userData = UserData();
   bool _isLoading = false;
-  String? _predictionResult;
   String? _errorMessage;
+
+  Future<void> _submitData() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      // Navigate to TherapyTestScreen and wait for test scores
+      final result = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const TherapyTestScreen(),
+        ),
+      );
+
+      if (result != null && result is Map<String, int>) {
+        // Combine user data and test scores
+        final data = {
+          ..._userData.toMap(),
+          'gad7_score': result['gad7'] ?? 0,
+          'phq9_score': result['phq9'] ?? 0,
+          'pss_score': result['pss'] ?? 0,
+        };
+
+        // Send to stress predictive model API
+        final response = await http.post(
+          Uri.parse('http://192.168.1.150/api/v1/predict'), // Replace with your API endpoint
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode(data),
+        );
+
+        if (response.statusCode == 200) {
+          final prediction = jsonDecode(response.body);
+          // Navigate to PredictiveResultScreen with prediction
+          Navigator.pushNamed(context, '/predictive_result', arguments: prediction);
+        } else {
+          setState(() {
+            _errorMessage = 'Failed to get prediction. Please try again.';
+            _isLoading = false;
+          });
+        }
+      } else {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Error: $e';
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +91,7 @@ class _TherapistPredictionBehaviorScreenState extends State<TherapistPredictionB
                 ),
                 const SizedBox(height: 20),
                 DropdownButtonFormField<String>(
-                  decoration: const InputDecoration(labelText: 'sex'),
+                  decoration: const InputDecoration(labelText: 'Sex'),
                   value: _userData.gender,
                   items: <String>['Male', 'Female']
                       .map((String value) {
@@ -148,29 +205,12 @@ class _TherapistPredictionBehaviorScreenState extends State<TherapistPredictionB
                 const SizedBox(height: 20),
                 Center(
                   child: ElevatedButton(
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const TherapyTestScreen(),
-                          ),
-                        );
-                      }
-                    },
+                    onPressed: _submitData,
                     child: _isLoading
                         ? const CircularProgressIndicator(color: Colors.white)
                         : const Text('Submit'),
                   ),
                 ),
-                if (_predictionResult != null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 16.0),
-                    child: Text(
-                      'Prediction: $_predictionResult',
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                  ),
                 if (_errorMessage != null)
                   Padding(
                     padding: const EdgeInsets.only(top: 16.0),

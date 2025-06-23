@@ -22,9 +22,9 @@ class _GAD7TestScreenState extends State<GAD7TestScreen> {
 
   final List<String> answerOptions = [
     'Not at all',
+    'Several days',
     'More than half the days',
     'Nearly every day',
-    'Several days',
   ];
 
   int calculateScore() {
@@ -68,7 +68,7 @@ class _GAD7TestScreenState extends State<GAD7TestScreen> {
                               value: answerIndex,
                               groupValue: answers[index],
                               onChanged: (value) {
-                                setState(()  {
+                                setState(() {
                                   answers[index] = value!;
                                 });
                               },
@@ -97,8 +97,15 @@ class _GAD7TestScreenState extends State<GAD7TestScreen> {
                           ),
                           actions: [
                             TextButton(
+                              child: const Text('Submit'),
+                              onPressed: () {
+                                Navigator.pop(context);
+                                Navigator.pop(context, score);
+                              },
+                            ),
+                            TextButton(
                               child: const Text('Close'),
-                              onPressed: () => Navigator.of(context).pop(),
+                              onPressed: () => Navigator.pop(context),
                             ),
                           ],
                         );
